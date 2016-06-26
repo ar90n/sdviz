@@ -1,0 +1,47 @@
+{
+  "name": "sdviz",
+  "version": "0.0.1",
+  "description": "sdviz frontend resources.",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack && node bundle.js && xxd -i ./dist/index_bundle.html ./dist/index_bundle.html.h"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ar90n/sdviz.git"
+  },
+  "author": "Masahiro Wada",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ar90n/sdviz/issues"
+  },
+  "homepage": "https://github.com/ar90n/sdviz#readme",
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-loader": "^6.2.4",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-polyfill": "^6.9.1",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-es2015-loose": "^7.0.0",
+    "babel-preset-react": "^6.11.1",
+    "babel-preset-stage-0": "^6.5.0",
+    "css-loader": "^0.23.1",
+    "resource-embedder": "^0.2.2",
+    "style-loader": "^0.13.1",
+    "uglify": "^0.1.5",
+    "uglify-js": "^2.6.4",
+    "webpack": "^1.13.1"
+  },
+  "dependencies": {
+    "c3": "^0.4.11",
+    "classnames": "^2.2.5",
+    "d3": "^4.0.0",
+    "material-ui": "^0.15.1",
+    "react": "^15.1.0",
+    "react-dom": "^15.1.0",
+    "react-loader": "^2.4.0",
+    "react-redux": "^4.4.5",
+    "redux": "^3.5.2",
+    "redux-thunk": "^2.1.0"
+  }
+}

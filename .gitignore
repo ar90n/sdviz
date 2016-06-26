@@ -1,0 +1,8 @@
+.clang
+*.o
+external
+build
+
+node_modules
+index_bundle.html
+index_bundle.js
