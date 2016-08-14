@@ -92,14 +92,6 @@ add_library( sdviz STATIC ${SDVIS_SRCS} ${SDVIS_OBJS}  )
 INSTALL( TARGETS sdviz ARCHIVE DESTINATION lib )
 INSTALL( FILES ${SDVIZ_DIR}/sdviz.hpp DESTINATION include)
 
-add_executable(mytest ${TEST_DIR}/test.cpp)
-target_link_libraries( mytest ${Boost_LIBRARIES} )
-target_link_libraries( mytest crypto )
-target_link_libraries( mytest sdviz )
-target_include_directories(mytest PUBLIC ${SDVIZ_DIR})
-
-#add_test(
-#    NAME mytest
-#    COMMAND $<TARGET_FILE:mytest>
-#    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tmp
-#)
+add_dependencies( sdviz SimpleWebSocketServer )
+add_dependencies( sdviz SimpleWebServer )
+add_dependencies( sdviz json11 )
