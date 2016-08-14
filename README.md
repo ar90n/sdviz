@@ -1,7 +1,7 @@
 What is sdviz ?
 ===============
-sdviz stands for Simple Dava Visualizer.  
-I developed this library to show image, chart and text data and intaract with them by C++ simply.  
+sdviz stands for Simple Data Visualizer.  
+I developed this library to show image, chart and text data and interact to them by C++.  
 sdviz contains http and websocket server. So users can access these data using Web browser.
 
 Installation
