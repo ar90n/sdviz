@@ -1,8 +1,8 @@
-What is libsdv ?
+What is sdviz ?
 ===============
-libsdv stands for Simple Dava Visualize Library.
-I developed this library to show image, chart and text data and intaract with them by C++ simply.
-libsdv contains http and websocket server. So users can access these data using Web browser.
+sdviz stands for Simple Dava Visualizer.  
+I developed this library to show image, chart and text data and intaract with them by C++ simply.  
+sdviz contains http and websocket server. So users can access these data using Web browser.
 
 Installation
 ===============
@@ -15,6 +15,7 @@ Installation
 
 Screenshot
 ===============
+![screenshot](https://raw.githubusercontent.com/ar90n/sdviz/images/screenshot.png)
 
 Feature
 ===============
@@ -28,7 +29,7 @@ Future Feature
 ===============
 * Replace JSON with MessagePack.
 * Compress serialized data using LZ4.
-* Use CornerStone[] as image data viewer.
+* Use [CornerStone](https://github.com/chafey/cornerstone) as image data viewer.
 * Add test cases.
 * Add excamples.
 
