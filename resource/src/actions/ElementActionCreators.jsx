@@ -1,8 +1,9 @@
+import msgpack from 'msgpack-lite';
 import { SET_VALUE, SYNC_VALUE } from '../constants/ActionTypes'
 
 export function setValue( ws, obj ) {
     return ( dispatch ) => {
-        ws.send( JSON.stringify( obj ) );
+        ws.send( msgpack.encode( obj ) );
     };
 }
 

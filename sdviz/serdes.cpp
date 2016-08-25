@@ -9,7 +9,7 @@ namespace
         return ( 0 < _obj.count("type") )
             && ( 0 < _obj.count("value") )
             && ( 0 < _obj.count("id") )
-            && _obj.at("type").is_number();
+            && _obj.at("type").is_int();
     }
 }
 
@@ -26,13 +26,13 @@ serialized_type sdviz::serialize( intermediate_type const& _intermediate )
 intermediate_type sdviz::deserialize( serialized_type const& _serialize )
 {
     std::string err_message;
-    auto json = json11::Json::parse( _serialize, err_message );
+    auto msgpack = msgpack11::MsgPack::parse( _serialize, err_message );
     if( 0 < err_message.length() )
     {
-        throw std::runtime_error( "Json parse failed." );
+        throw std::runtime_error( "MsgPack parse failed." );
     }
 
-    return json;
+    return msgpack;
 }
 
 ActionVariant sdviz::intermediateTypeToSetValueAction( intermediate_type const& _intermediate_action )

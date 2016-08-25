@@ -39,17 +39,17 @@ set( EXTERNAL_SRC_DIR "${EXTERNAL_DIR}/src" )
 set( EXTERNAL_OBJ_DIR "${EXTERNAL_DIR}/obj" )
 set( EXTERNAL_INCLUDE_DIR "${EXTERNAL_DIR}/include" )
 
-set( json11_DIR "${EXTERNAL_SRC_DIR}/json11" )
-ExternalProject_Add( json11
+set( msgpack11_DIR "${EXTERNAL_SRC_DIR}/msgpack11" )
+ExternalProject_Add( msgpack11
     PREFIX ${EXTERNAL_DIR}
-    GIT_REPOSITORY https://github.com/dropbox/json11
+    GIT_REPOSITORY https://github.com/ar90n/msgpack11
     CONFIGURE_COMMAND :
-    BUILD_COMMAND g++ -c -std=c++1y ../json11/json11.cpp -o json11.o
-    INSTALL_COMMAND install -d ${EXTERNAL_OBJ_DIR} ${EXTERNAL_INCLUDE_DIR} &&  install json11.o ${EXTERNAL_OBJ_DIR}/ && install ${json11_DIR}/json11.hpp ${EXTERNAL_INCLUDE_DIR}/
+    BUILD_COMMAND g++ -c -std=c++11 ../msgpack11/msgpack11.cpp -o msgpack11.o
+    INSTALL_COMMAND install -d ${EXTERNAL_OBJ_DIR} ${EXTERNAL_INCLUDE_DIR} &&  install msgpack11.o ${EXTERNAL_OBJ_DIR}/ && install ${msgpack11_DIR}/msgpack11.hpp ${EXTERNAL_INCLUDE_DIR}/
 )
 
 set_source_files_properties(
-    ${EXTERNAL_OBJ_DIR}/json11.o PROPERTIES
+    ${EXTERNAL_OBJ_DIR}/msgpack11.o PROPERTIES
     EXTERNAL_OBJECT TRUE
     GENERATED TRUE
 )
@@ -75,7 +75,7 @@ ExternalProject_Add( SimpleWebSocketServer
 include_directories( ${EXTERNAL_INCLUDE_DIR} )
 
 #for debug use
-#add_definitions(-DDEBUG_USE_EXTERNAL_TEMPLATE)
+add_definitions(-DDEBUG_USE_EXTERNAL_TEMPLATE)
 
 set( SDVIS_SRCS ${SDVIZ_DIR}/sdviz.cpp
                 ${SDVIZ_DIR}/resource.cpp
@@ -86,7 +86,7 @@ set( SDVIS_SRCS ${SDVIZ_DIR}/sdviz.cpp
                 ${SDVIZ_DIR}/model_sync_server.cpp
                 ${SDVIZ_DIR}/serdes.cpp )
 
-set( SDVIS_OBJS ${EXTERNAL_OBJ_DIR}/json11.o )
+set( SDVIS_OBJS ${EXTERNAL_OBJ_DIR}/msgpack11.o )
 
 add_library( sdviz STATIC ${SDVIS_SRCS} ${SDVIS_OBJS}  )
 INSTALL( TARGETS sdviz ARCHIVE DESTINATION lib )
@@ -94,4 +94,4 @@ INSTALL( FILES ${SDVIZ_DIR}/sdviz.hpp DESTINATION include)
 
 add_dependencies( sdviz SimpleWebSocketServer )
 add_dependencies( sdviz SimpleWebServer )
-add_dependencies( sdviz json11 )
+add_dependencies( sdviz msgpack11 )

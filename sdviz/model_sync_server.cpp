@@ -23,10 +23,9 @@ void ModelSyncServer::start( int const _http_port,
 {
     http_server_ptr = std::make_unique< HttpServer >( _http_port, _http_threads );
     http_server_ptr->resource["^/config$"]["GET"]=[&,_ws_port]( std::shared_ptr<HttpServer::Response> response, std::shared_ptr<HttpServer::Request> ) {
-        intermediate_map_type const config{
-            { "ws_port", _ws_port },
-        };
-        std::string const content = serialize( config );
+        std::stringstream ss;
+        ss << "{" << R"("ws_port")" << ":" << _ws_port << "}";
+        std::string const content{ss.str()};
 
         *response << "HTTP/1.1 200 OK\r\nContent-Length: " << content.size() << "\r\n\r\n" << content;
         response->flush();
@@ -51,7 +50,8 @@ void ModelSyncServer::start( int const _http_port,
     ws_endpoint.onmessage=[&]( std::shared_ptr<WsServer::Connection>, std::shared_ptr<WsServer::Message> message) {
         try
         {
-            auto intermediate_action = deserialize( message->string() );
+            std::string message_str{ message->string() };
+            auto intermediate_action = deserialize( serialized_type( message_str.begin(), message_str.end() ) );
             receiveAction( intermediate_action );
         }
         catch( std::exception& e )
@@ -119,9 +119,10 @@ void ModelSyncServer::sendAction( intermediate_type const& _intermediate_action 
     {
         return;
     }
+    serialized_type buffer{ serialize( _intermediate_action ) };
 
     auto send_stream = std::make_shared<WsServer::SendStream>();
-    *send_stream << serialize( _intermediate_action );
+    std::copy( std::begin(buffer), std::end(buffer), std::ostream_iterator<serialized_type::value_type>(*send_stream));
 
     auto& ws_endpoint = ws_server_ptr->endpoint["^/$"];
     auto connections = ws_endpoint.get_connections();
@@ -131,7 +132,7 @@ void ModelSyncServer::sendAction( intermediate_type const& _intermediate_action 
             if(ec) {
                 LOG(error) << "Server: Error sending message. Error: " << ec << ", error message: " << ec.message();
             }
-        });
+        }, 130);
     }
 }
 

@@ -4,7 +4,7 @@
 # include <string>
 # include <stdexcept>
 
-# include <json11.hpp>
+# include <msgpack11.hpp>
 # include <server_ws.hpp>
 
 # include "./action.hpp"
@@ -16,10 +16,10 @@
 
 namespace sdviz
 {
-    using serialized_type = std::string;
-    using intermediate_array_type = json11::Json::array;
-    using intermediate_map_type = json11::Json::object;
-    using intermediate_type = json11::Json;
+    using serialized_type = std::vector<uint8_t>;
+    using intermediate_array_type = msgpack11::MsgPack::array;
+    using intermediate_map_type = msgpack11::MsgPack::object;
+    using intermediate_type = msgpack11::MsgPack;
 
     bool isValid( intermediate_type const& _intermediate );
     serialized_type serialize( intermediate_type const& _intermediate );
