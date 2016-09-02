@@ -9,7 +9,7 @@ namespace
         return ( 0 < _obj.count("type") )
             && ( 0 < _obj.count("value") )
             && ( 0 < _obj.count("id") )
-            && _obj.at("type").is_int();
+            && _obj.at("type").is_uint8();
     }
 }
 

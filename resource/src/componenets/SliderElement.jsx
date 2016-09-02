@@ -19,7 +19,6 @@ class SliderElement extends ElementComponent {
     }
 
     updateValue( value ) {
-        console.log( value );
         this.value = value;
         this.setValue( this.value );
     }

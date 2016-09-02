@@ -37,21 +37,34 @@ set( TEST_DIR "${PROJECT_SOURCE_DIR}/test/" )
 set( EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external/" )
 set( EXTERNAL_SRC_DIR "${EXTERNAL_DIR}/src" )
 set( EXTERNAL_OBJ_DIR "${EXTERNAL_DIR}/obj" )
+set( EXTERNAL_LIB_DIR "${EXTERNAL_DIR}/lib" )
 set( EXTERNAL_INCLUDE_DIR "${EXTERNAL_DIR}/include" )
+
+add_custom_target(external_dirs
+    COMMAND install -d ${EXTERNAL_DIR}
+    COMMAND install -d ${EXTERNAL_SRC_DIR}
+    COMMAND install -d ${EXTERNAL_OBJ_DIR}
+    COMMAND install -d ${EXTERNAL_LIB_DIR}
+    COMMAND install -d ${EXTERNAL_INCLUDE_DIR}
+)
 
 set( msgpack11_DIR "${EXTERNAL_SRC_DIR}/msgpack11" )
 ExternalProject_Add( msgpack11
     PREFIX ${EXTERNAL_DIR}
     GIT_REPOSITORY https://github.com/ar90n/msgpack11
-    CONFIGURE_COMMAND :
-    BUILD_COMMAND g++ -c -std=c++11 ../msgpack11/msgpack11.cpp -o msgpack11.o
-    INSTALL_COMMAND install -d ${EXTERNAL_OBJ_DIR} ${EXTERNAL_INCLUDE_DIR} &&  install msgpack11.o ${EXTERNAL_OBJ_DIR}/ && install ${msgpack11_DIR}/msgpack11.hpp ${EXTERNAL_INCLUDE_DIR}/
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_DIR}
+    DEPENDS external_dirs
 )
 
-set_source_files_properties(
-    ${EXTERNAL_OBJ_DIR}/msgpack11.o PROPERTIES
-    EXTERNAL_OBJECT TRUE
-    GENERATED TRUE
+set( lz4_DIR "${EXTERNAL_SRC_DIR}/lz4" )
+ExternalProject_Add( lz4
+    PREFIX ${EXTERNAL_DIR}
+    GIT_REPOSITORY https://github.com/Cyan4973/lz4
+    CONFIGURE_COMMAND :
+    BUILD_IN_SOURCE ${EXTERNAL_SRC_DIR}/lz4
+    BUILD_COMMAND make -e PREFIX=${EXTERNAL_DIR}
+    INSTALL_COMMAND make -e PREFIX=${EXTERNAL_DIR} install && make clean
+    DEPENDS external_dirs
 )
 
 set( SimpleWebServer_DIR "${EXTERNAL_SRC_DIR}/SimpleWebServer" )
@@ -60,7 +73,8 @@ ExternalProject_Add( SimpleWebServer
     GIT_REPOSITORY https://github.com/eidheim/Simple-Web-Server
     CONFIGURE_COMMAND :
     BUILD_COMMAND :
-    INSTALL_COMMAND install -d ${EXTERNAL_INCLUDE_DIR} && install ${SimpleWebServer_DIR}/server_http.hpp ${SimpleWebServer_DIR}/client_http.hpp ${EXTERNAL_INCLUDE_DIR}/
+    INSTALL_COMMAND install ${SimpleWebServer_DIR}/server_http.hpp ${SimpleWebServer_DIR}/client_http.hpp ${EXTERNAL_INCLUDE_DIR}/
+    DEPENDS external_dirs
 )
 
 set( SimpleWebSocketServer_DIR "${EXTERNAL_SRC_DIR}/SimpleWebSocketServer" )
@@ -69,13 +83,14 @@ ExternalProject_Add( SimpleWebSocketServer
     GIT_REPOSITORY https://github.com/eidheim/Simple-WebSocket-Server
     CONFIGURE_COMMAND :
     BUILD_COMMAND :
-    INSTALL_COMMAND install -d ${EXTERNAL_INCLUDE_DIR} && install ${SimpleWebSocketServer_DIR}/server_ws.hpp ${SimpleWebSocketServer_DIR}/client_ws.hpp ${SimpleWebSocketServer_DIR}/crypto.hpp ${EXTERNAL_INCLUDE_DIR}/
+    INSTALL_COMMAND install ${SimpleWebSocketServer_DIR}/server_ws.hpp ${SimpleWebSocketServer_DIR}/client_ws.hpp ${SimpleWebSocketServer_DIR}/crypto.hpp ${EXTERNAL_INCLUDE_DIR}/
+    DEPENDS external_dirs
 )
 
 include_directories( ${EXTERNAL_INCLUDE_DIR} )
 
 #for debug use
-add_definitions(-DDEBUG_USE_EXTERNAL_TEMPLATE)
+#add_definitions(-DDEBUG_USE_EXTERNAL_TEMPLATE)
 
 set( SDVIS_SRCS ${SDVIZ_DIR}/sdviz.cpp
                 ${SDVIZ_DIR}/resource.cpp
@@ -86,12 +101,23 @@ set( SDVIS_SRCS ${SDVIZ_DIR}/sdviz.cpp
                 ${SDVIZ_DIR}/model_sync_server.cpp
                 ${SDVIZ_DIR}/serdes.cpp )
 
-set( SDVIS_OBJS ${EXTERNAL_OBJ_DIR}/msgpack11.o )
+add_custom_command(
+    OUTPUT ${EXTERNAL_OBJ_DIR}/msgpack11.cpp.o ${EXTERNAL_OBJ_DIR}/lz4.o ${EXTERNAL_OBJ_DIR}/lz4frame.o ${EXTERNAL_OBJ_DIR}/lz4hc.o ${EXTERNAL_OBJ_DIR}/xxhash.o
+    COMMAND ${CMAKE_AR} -xv ${EXTERNAL_LIB_DIR}/libmsgpack11.a
+    COMMAND ${CMAKE_AR} -xv ${EXTERNAL_LIB_DIR}/liblz4.a
+    WORKING_DIRECTORY ${EXTERNAL_OBJ_DIR}
+)
 
-add_library( sdviz STATIC ${SDVIS_SRCS} ${SDVIS_OBJS}  )
+add_library( sdviz STATIC ${SDVIS_SRCS}
+                          ${EXTERNAL_OBJ_DIR}/msgpack11.cpp.o
+                          ${EXTERNAL_OBJ_DIR}/lz4.o
+                          ${EXTERNAL_OBJ_DIR}/lz4frame.o
+                          ${EXTERNAL_OBJ_DIR}/lz4hc.o
+                          ${EXTERNAL_OBJ_DIR}/xxhash.o )
 INSTALL( TARGETS sdviz ARCHIVE DESTINATION lib )
 INSTALL( FILES ${SDVIZ_DIR}/sdviz.hpp DESTINATION include)
 
 add_dependencies( sdviz SimpleWebSocketServer )
 add_dependencies( sdviz SimpleWebServer )
 add_dependencies( sdviz msgpack11 )
+add_dependencies( sdviz lz4 )

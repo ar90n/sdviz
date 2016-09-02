@@ -5,7 +5,7 @@
 # include <stdexcept>
 
 # include <msgpack11.hpp>
-# include <server_ws.hpp>
+# include <lz4.h>
 
 # include "./action.hpp"
 # include "./image_impl.hpp"
@@ -39,12 +39,17 @@ namespace sdviz
     template<>
     inline typename ValueConvertedTypeTraits< ImageImpl >::type valueToIntermediateType<ImageImpl>( ImageImpl const& _image )
     {
-        auto image_size = ImageImpl::GetBufferSize( _image );
-        std::string const image_str{ _image.getBuffer(), _image.getBuffer() + image_size };
-        std::string const image_base64 = SimpleWeb::Crypto::Base64::encode( image_str );
+        auto const image_size = ImageImpl::GetBufferSize( _image );
+        auto const compressed_image_bound = LZ4_compressBound( image_size );
+        serialized_type compressed_image( compressed_image_bound );
+        int const compressed_image_size = LZ4_compress_default( reinterpret_cast< const char*>( _image.getBuffer() ),
+                                                                reinterpret_cast< char*>( compressed_image.data() ),
+                                                                image_size,
+                                                                compressed_image_bound );
+        compressed_image.erase( std::begin( compressed_image ) + compressed_image_size, std::end( compressed_image ) );
 
         return intermediate_map_type{
-            { "buffer", image_base64 },
+            { "buffer", compressed_image },
             { "width", _image.getWidth() },
             { "height", _image.getHeight() },
             { "format", _image.getFormat() }
