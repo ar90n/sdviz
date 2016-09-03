@@ -11,7 +11,7 @@
 # include <stdexcept>
 #endif
 
-#ifdef DEBUG_EXTERNAL_MAIN_PAGE_TEMPLATE_PATH
+#ifndef DEBUG_EXTERNAL_MAIN_PAGE_TEMPLATE_PATH
 # define DEBUG_EXTERNAL_MAIN_PAGE_TEMPLATE_PATH "./index.html"
 #endif
 

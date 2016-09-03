@@ -3,6 +3,7 @@ import AppBar from 'material-ui/AppBar';
 import * as Resources from '../constants/Resources';
 import Loader from 'react-loader';
 import ContainerElement from './ContainerElement';
+import msgpack from 'msgpack-lite';
 
 class Main extends React.Component {
     constructor( props ) {
@@ -23,10 +24,11 @@ class Main extends React.Component {
                 }
 
                 const ws_url = `ws://${window.location.hostname}:${res.ws_port}`;
-                this.ws = new WebSocket( ws_url )
+                this.ws = new WebSocket( ws_url );
+                this.ws.binaryType = 'arraybuffer';
                 this.ws.onopen = (e) => this.actions.connectSuccess();
-                this.ws.onerror = (e) => this.actions.connectError(e);
-                this.ws.onmessage = (e) => this.actions.syncValue( JSON.parse( e.data ) );
+                this.ws.onerror = (e) => this.actions.connectError( msgpack.decode( new Uint8Array( e.data ) ) );
+                this.ws.onmessage = (e) => this.actions.syncValue( msgpack.decode( new Uint8Array( e.data ) ) );
             });
     }
 
