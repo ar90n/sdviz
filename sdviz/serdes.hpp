@@ -16,7 +16,7 @@
 
 namespace sdviz
 {
-    using serialized_type = std::vector<uint8_t>;
+    using serialized_type = std::string;
     using intermediate_array_type = msgpack11::MsgPack::array;
     using intermediate_map_type = msgpack11::MsgPack::object;
     using intermediate_type = msgpack11::MsgPack;
@@ -41,7 +41,7 @@ namespace sdviz
     {
         auto const image_size = ImageImpl::GetBufferSize( _image );
         auto const compressed_image_bound = LZ4_compressBound( image_size );
-        serialized_type compressed_image( compressed_image_bound );
+        std::vector<uint8_t> compressed_image( compressed_image_bound );
         int const compressed_image_size = LZ4_compress_default( reinterpret_cast< const char*>( _image.getBuffer() ),
                                                                 reinterpret_cast< char*>( compressed_image.data() ),
                                                                 image_size,

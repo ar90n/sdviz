@@ -3,16 +3,14 @@ enable_testing()
 project( libsdv )
 include( ExternalProject )
 
-set( CMAKE_CXX_FLAGS_RELEASE "-std=c++1y -Wall -Wextra" )
-set( CMAKE_CXX_FLAGS_DEBUG "-g -std=c++1y -Wall -Wextra" )
+set( CMAKE_CXX_FLAGS_RELEASE "-std=c++1y -Wall -Wextra -DBOOST_ALL_DYN_LINK" )
+set( CMAKE_CXX_FLAGS_DEBUG "-g -std=c++1y -Wall -Wextra -DBOOST_ALL_DYN_LINK" )
 #set( CMAKE_BUILD_TYPE Debug )
 set( CMAKE_BUILD_TYPE Release )
 
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 
-set( Boost_USE_STATIC_LIBS ON )
 find_package( Boost
-              1.58
               COMPONENTS log
                          log_setup
                          system

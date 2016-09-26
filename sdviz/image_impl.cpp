@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <stdexcept>
+#include <algorithm>
 
 using namespace sdviz;
 
@@ -60,7 +61,7 @@ sdviz::ImageImpl sdviz::ImageImpl::clone() const
 {
     ImageImpl new_image_impl( width, height, format );
     size_t buffer_size = GetBufferSize( new_image_impl );
-    std::memcpy( new_image_impl.buffer.get(), buffer.get(), buffer_size );
+    std::copy( buffer.get(), buffer.get() + buffer_size, new_image_impl.buffer.get() );
     return new_image_impl;
 }
 

@@ -3,13 +3,10 @@ project( sample1 )
 
 set( CMAKE_CXX_FLAGS_RELEASE "-std=c++1y -Wall -Wextra" )
 set( CMAKE_CXX_FLAGS_DEBUG "-g -std=c++1y -Wall -Wextra" )
-set( CMAKE_BUILD_TYPE Debug )
+set( CMAKE_BUILD_TYPE Release )
 
-set( Boost_USE_STATIC_LIBS ON )
 find_package( Boost
-              1.58
               COMPONENTS log
-                         log_setup
                          system
                          coroutine
                          context
@@ -28,5 +25,6 @@ find_package(Threads REQUIRED)
 
 add_executable( main main.cpp lena.cpp )
 target_link_libraries( main ${Boost_LIBRARIES} )
-target_link_libraries( main crypto )
+target_link_libraries( main ${OPENSSL_CRYPTO_LIBRARY})
+target_link_libraries( main ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries( main libsdviz.a )
