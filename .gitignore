@@ -2,6 +2,7 @@
 *.o
 external
 build
+.envrc
 
 node_modules
 index_bundle.html

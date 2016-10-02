@@ -3,6 +3,7 @@
 #include <memory>
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 extern unsigned char lena[];
 extern unsigned int lena_len;
@@ -22,7 +23,7 @@ sdviz::Image allocateImage( int width, int height )
 sdviz::Image loadTestImage()
 {
     sdviz::Image image = allocateImage( lena_width, lena_height );
-    memcpy( image.getBuffer(), lena, lena_len );
+    std::copy( lena, lena + lena_len, image.getBuffer() );
 
     return image;
 }
@@ -85,7 +86,8 @@ int main(int argc, char const* argv[])
 
     sdviz::Image org_image = loadTestImage();
     sdviz::Image image = allocateImage( org_image.getWidth(), org_image.getHeight() );
-    memcpy( image.getBuffer(), org_image.getBuffer(), 3 * org_image.getWidth() * org_image.getHeight() );
+    size_t const image_size = 3 * org_image.getWidth() * org_image.getHeight();
+    std::copy( org_image.getBuffer(), org_image.getBuffer() + image_size, image.getBuffer() );
 
     sdviz::Canvas canvas{ image.getWidth(), image.getHeight() };
     canvas.drawImage( image, std::make_tuple( 0.0, 0.0 ) );
