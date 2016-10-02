@@ -25,11 +25,9 @@ Feature
 * Support RGB888 Image.
 * Support two intaractive components ( Button and Slider ).
 
-Future Feature
+Future
 ===============
-* Replace JSON with MessagePack.
-* Compress serialized data using LZ4.
-* Use [CornerStone](https://github.com/chafey/cornerstone) as image data viewer.
+* Improve canvas component.
 * Add test cases.
 * Add excamples.
 
