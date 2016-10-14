@@ -52,7 +52,8 @@ namespace sdviz
     class Canvas final
     {
         public:
-            using value_type = std::tuple< double, double >;
+            using value_type = std::tuple< int, int >;
+            using color_type = std::tuple< uint8_t, uint8_t, uint8_t >;
             template< typename T > using container_type = std::vector< T >;
 
             struct style
@@ -71,12 +72,37 @@ namespace sdviz
             Canvas( Canvas&& _canvas ) = default;
             ~Canvas() = default;
 
-            void drawImage( Image const& _image, value_type const& _lt, double _opacity = 1.0, style const& _style = style{} );
-            void drawRect( value_type const& _lt, value_type const& _rb, style const& _style = style{} );
-            void drawCircle( value_type const& _center, double _radius, style const& _style = style{} );
-            void drawText( std::string const& _text, value_type const& _pos, style const& _style = style{} );
-            void drawLine( container_type< value_type > const& _points, style const& _style = style{} );
-            template< typename IteratorType > void drawLine( IteratorType _begin, IteratorType _end, style const& _style = style{} );
+            void drawImage( Image const& _image,
+                            value_type const& _lt,
+                            double _opacity = 1.0 );
+            void drawRect( value_type const& _lt,
+                           value_type const& _rb,
+                           color_type color = color_type{ 0x00, 0x00, 0x00 },
+                           uint8_t line_width = 1,
+                           bool fill = false,
+                           bool with_dots = false );
+            void drawCircle( value_type const& _center,
+                             double _radius,
+                             color_type color = color_type{ 0x00, 0x00, 0x00 },
+                             uint8_t line_width = 1,
+                             bool fill = false,
+                             bool with_dots = false );
+            void drawText( std::string const& _text,
+                           value_type const& _pos,
+                           color_type color = color_type{ 0x00, 0x00, 0x00 },
+                           uint8_t font_size = 24 );
+            void drawLine( container_type< value_type > const& _points,
+                           color_type color = color_type{ 0x00, 0x00, 0x00 },
+                           uint8_t line_width = 1,
+                           bool fill = false,
+                           bool with_dots = false );
+            template< typename IteratorType >
+            void drawLine( IteratorType _begin,
+                           IteratorType _end,
+                           color_type color = color_type{ 0x00, 0x00, 0x00 },
+                           uint8_t line_width = 1,
+                           bool fill = false,
+                           bool with_dots = false );
 
             int getWidth() const noexcept;
             int getHeight() const noexcept;
@@ -90,10 +116,15 @@ namespace sdviz
     };
 
     template< typename IteratorType >
-    void Canvas::drawLine( IteratorType _begin, IteratorType _end, style const& _style )
+    void Canvas::drawLine( IteratorType _begin,
+                           IteratorType _end,
+                           color_type _color,
+                           uint8_t _line_width,
+                           bool _fill,
+                           bool _with_dots )
     {
         container_type< value_type > points( _begin, _end );
-        drawLine( points, _style );
+        drawLine( points, _color, _line_width, _fill, _with_dots );
     }
 
     template< typename ValueType, typename ParamType >
