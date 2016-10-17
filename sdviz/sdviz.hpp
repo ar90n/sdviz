@@ -26,7 +26,8 @@ namespace sdviz
             enum Format
             {
                 RGB_888,
-                UINT_8
+                UINT_8,
+                UINT_16
             };
 
             Image( int const _width, int const _height, Format const _format, uint8_t* const _buffer = nullptr );

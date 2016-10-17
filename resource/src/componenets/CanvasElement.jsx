@@ -4,11 +4,47 @@ import LZ4 from 'lz4';
 import Konva  from 'konva';
 import ElementComponent from './ElementComponent';
 
-function getImageSize( { width, height, format } ) {
-    return 3 * width * height;
+const MAX_SCALE = 15.0;
+const UNIT_SCALE_DIST = 120;
+const UNIT_WINDOW_DIST = 400;
+
+function convertArrayView( view, format ) {
+    switch( format ) {
+        case SdvizImage.RGB_888:
+        case SdvizImage.UINT_8:
+            return new Uint8Array( view.buffer );
+        case SdvizImage.UINT_16:
+            return new Uint16Array( view.buffer );
+    }
+
+    throw new Error( "Unknown image format." );
 }
 
-function uncompressLZ4( buffer, uncompressSize ) {
+function getChannelsPerPixel( format ) {
+    switch( format ) {
+        case SdvizImage.RGB_888:
+            return 3;
+        case SdvizImage.UINT_8:
+        case SdvizImage.UINT_16:
+            return 1;
+    }
+
+    throw new Error( "Unknown image format." );
+}
+
+function getBytesPerChannel( format ) {
+    switch( format ) {
+        case SdvizImage.RGB_888:
+        case SdvizImage.UINT_8:
+            return 1;
+        case SdvizImage.UINT_16:
+            return 2;
+    }
+
+    throw new Error( "Unknown image format." );
+}
+
+function uncompressLZ4( buffer, uncompressSize, format ) {
     const uncompBuffer = new Buffer( uncompressSize );
     const uncompBufferSize = LZ4.decodeBlock( buffer, uncompBuffer );
 
@@ -18,7 +54,102 @@ function uncompressLZ4( buffer, uncompressSize ) {
     {
         view[i] = uncompBuffer[i];
     }
-    return view;
+    return convertArrayView( view, format );
+}
+
+function applyWindow( window_level, window_width, value ) {
+    const min_value = window_level - window_width / 2;
+    return 255 * Math.max( 0, Math.min( (value - min_value) / window_width, 1.0 ) );
+}
+
+function calcWindowInfo( image ) {
+    if( getBytesPerChannel( image.format ) == 1 ) {
+        return { width: 255, level: 127.5 }
+    }
+
+    let min_value = Number.MAX_VALUE;
+    let max_value = Number.MIN_VALUE;
+
+    const image_pixels = image.width * image.height;
+    for( let i = 0; i < image_pixels; i++ )
+    {
+        min_value = Math.min( image.buffer[i], min_value );
+        max_value = Math.max( image.buffer[i], max_value );
+    }
+
+    const window_width = max_value - min_value;
+    const window_level = (max_value + min_value) / 2;
+    return { width: window_width, level: window_level };
+}
+
+class SdvizImage extends Konva.Image {
+    static get RGB_888() { return 0; }
+    static get UINT_8() { return 1; }
+    static get UINT_16() { return 2; }
+
+    get window_level() {
+        return this.wl;
+    }
+
+    get window_width() {
+        return this.ww;
+    }
+
+    constructor( org_image, opacity, ctx ) {
+        super();
+        const image_size = this.getImageSize( org_image );
+        org_image.buffer = uncompressLZ4( org_image.buffer, image_size, org_image.format );
+
+        this.org_image = org_image;
+        this.opacity = opacity;
+        this.view_image = ctx.createImageData( org_image.width, org_image.height ); 
+
+        const window_info = calcWindowInfo( this.org_image );
+        this.wl= window_info.level;
+        this.ww= window_info.width;
+        this.org_window_width = window_info.width;
+    }
+
+    getImageSize( { width, height, format } ) {
+        return getChannelsPerPixel(format) * getBytesPerChannel(format) * width * height;
+    }
+
+    update( window_level, window_width ) {
+        this.wl= window_level || this.window_level;
+        this.ww= Math.max(0, window_width) || this.window_width;
+
+        const image_pixels = this.org_image.width * this.org_image.height;
+        const pixel_step = getChannelsPerPixel( this.org_image.format );
+        const channel_step = ( 1 < pixel_step ) ? 1 : 0;
+        const has_alpha = ( pixel_step == 4) ? true : false;
+        if( has_alpha ) {
+            for( let i = 0; i < image_pixels; i++ )
+            {
+                this.view_image.data[ 4 * i + 0 ] = applyWindow( this.window_level, this.window_width, this.org_image.buffer[ pixel_step * i + 0 * channel_step ] );
+                this.view_image.data[ 4 * i + 1 ] = applyWindow( this.window_level, this.window_width, this.org_image.buffer[ pixel_step * i + 1 * channel_step ] );
+                this.view_image.data[ 4 * i + 2 ] = applyWindow( this.window_level, this.window_width, this.org_image.buffer[ pixel_step * i + 2 * channel_step ] );
+                this.view_image.data[ 4 * i + 3 ] = this.org_image.buffer[ pixel_step * i + 3 * channel_step ];
+            }
+        }
+        else {
+            for( let i = 0; i < image_pixels; i++ )
+            {
+                this.view_image.data[ 4 * i + 0 ] = applyWindow( this.window_level, this.window_width, this.org_image.buffer[ pixel_step * i + 0 * channel_step ] );
+                this.view_image.data[ 4 * i + 1 ] = applyWindow( this.window_level, this.window_width, this.org_image.buffer[ pixel_step * i + 1 * channel_step ] );
+                this.view_image.data[ 4 * i + 2 ] = applyWindow( this.window_level, this.window_width, this.org_image.buffer[ pixel_step * i + 2 * channel_step ] );
+                this.view_image.data[ 4 * i + 3 ] = this.opacity;
+            }
+        }
+
+        return createImageBitmap( this.view_image ).then( ( bitmap ) => {
+            this.setImage( bitmap );
+            return Promise.resolve( this );
+        });
+    }
+
+    calcWindowDisplacement( diff ) {
+        return diff * this.org_window_width / UNIT_WINDOW_DIST;
+    }
 }
 
 function createImageLayerPromise( command )
@@ -28,22 +159,11 @@ function createImageLayerPromise( command )
     const top_position = command.args[2];
     const opacity = 255 * command.args[3];
 
-    const image_size = getImageSize( src_image );
-    src_image.buffer = uncompressLZ4( src_image.buffer, image_size );
-
     const layer = new Konva.Layer();
     const ctx = layer.getContext();
-    const dst_image = ctx.createImageData( src_image.width, src_image.height );
-    for( let i = 0; i < src_image.width * src_image.height; i++ )
-    {
-        dst_image.data[ 4 * i + 0 ] = src_image.buffer[ 3 * i + 0 ];
-        dst_image.data[ 4 * i + 1 ] = src_image.buffer[ 3 * i + 1 ];
-        dst_image.data[ 4 * i + 2 ] = src_image.buffer[ 3 * i + 2 ];
-        dst_image.data[ 4 * i + 3 ] = opacity;
-    }
-
-    return createImageBitmap( dst_image ).then( ( bitmap ) => {
-        layer.add( new Konva.Image({ image: bitmap }) );
+    const image = new SdvizImage( src_image, opacity, ctx );
+    return image.update().then( ( image_node ) => {
+        layer.add( image_node );
         return Promise.resolve( layer );
     });
 }
@@ -200,16 +320,13 @@ function clipOffsetXY( offset_x, offset_y, scale, value_width, value_height, sta
     return res;
 }
 
-function clipScale( scale, value_width, value_height, stage_width, stage_height, max_scale )
+function clipScale( scale, value_width, value_height, stage_width, stage_height, MAX_SCALE )
 {
     const min_scale_x = Math.min( 1.0, stage_width / value_width );
     const min_scale_y = Math.min( 1.0, stage_height / value_height );
     const min_scale = Math.min( min_scale_x, min_scale_y );
-    return Math.max( min_scale, Math.min( scale, max_scale ) );
+    return Math.max( min_scale, Math.min( scale, MAX_SCALE ) );
 }
-
-const max_scale = 15.0;
-const unit_scale_dist = 120;
 
 class CanvasElement extends ElementComponent {
     static get TYPE() { return 1; }
@@ -222,14 +339,7 @@ class CanvasElement extends ElementComponent {
             this.stage.draw();
         };
         this.mousedownListener = ( e ) => {
-            if(this.stage) {
-                this.modifier_key_status = getModifierKeyStatus( e.evt.shiftKey, e.evt.ctrlKey );
-                this.press_x = e.evt.pageX;
-                this.press_y = e.evt.pageY;
-                this.press_stage_offset_x = this.stage.offsetX();
-                this.press_stage_offset_y = this.stage.offsetY();
-                this.press_stage_scale = this.stage.scaleX();
-            }
+            this.modifier_key_status = this.stage ? getModifierKeyStatus( e.evt.shiftKey, e.evt.ctrlKey ) : -1;
         };
         this.mousemoveListener = ( e ) => {
             if( !this.stage ) {
@@ -242,11 +352,11 @@ class CanvasElement extends ElementComponent {
                 return;
             }
 
-            const diff_x = e.pageX - this.press_x;
-            const diff_y = e.pageY - this.press_y;
+            const movement_y = -e.movementY;
+            const movement_x = -e.movementX;
             if( this.modifier_key_status == 0 ) {
-                const next_x = (-diff_x / this.stage.scaleX()) + this.press_stage_offset_x;
-                const next_y = (-diff_y / this.stage.scaleY()) + this.press_stage_offset_y;
+                const next_x = (movement_x / this.stage.scaleX()) + this.stage.offsetX();
+                const next_y = (movement_y / this.stage.scaleY()) + this.stage.offsetY();
                 const clipped_offset = clipOffsetXY( next_x,
                                                      next_y,
                                                      this.stage.scaleX(),
@@ -257,13 +367,13 @@ class CanvasElement extends ElementComponent {
                 this.stage.offset( clipped_offset );
                 this.stage.draw();
             } else if( this.modifier_key_status == 1 ) {
-                const next_scale = ( -diff_y / unit_scale_dist ) + this.press_stage_scale;
+                const next_scale = ( movement_y / UNIT_SCALE_DIST ) + this.stage.scaleY();
                 const next_clipped_scale = clipScale( next_scale,
                                                       this.value.width,
                                                       this.value.height,
                                                       this.stage.width(),
                                                       this.stage.height(),
-                                                      max_scale );
+                                                      MAX_SCALE );
                 this.stage.scale( { x: next_clipped_scale, y: next_clipped_scale });
 
                 const clipped_offset = clipOffsetXY( this.stage.offsetX(),
@@ -274,8 +384,19 @@ class CanvasElement extends ElementComponent {
                                                      this.stage.width(),
                                                      this.stage.height() );
                 this.stage.offset( clipped_offset );
-
                 this.stage.draw();
+            } else if( this.modifier_key_status == 2 ) {
+                const update_image_node_promises = this.stage.getLayers()
+                    .reduce( ( prev, cur ) => {
+                        Array.prototype.push.apply( prev, cur.getChildren( n => n.getClassName() === 'Image' ) ); 
+                        return prev;
+                    }, [] )
+                    .map( node => {
+                        const next_window_level = node.calcWindowDisplacement( movement_y ) + node.window_level;
+                        const next_window_width = -node.calcWindowDisplacement( movement_x ) + node.window_width;
+                        node.update( next_window_level, next_window_width );
+                    });
+                Promise.all( update_image_node_promises ).then( ( image_nodes ) => this.stage.draw() );
             }
         };
         this.mouseupListener = ( e ) => {
@@ -324,7 +445,7 @@ class CanvasElement extends ElementComponent {
                                               this.value.height,
                                               this.stage.width(),
                                               this.stage.height(),
-                                              max_scale );
+                                              MAX_SCALE );
         this.stage.scale( {x: next_clipped_scale, y: next_clipped_scale } );
 
         const clipped_offset = clipOffsetXY( this.stage.offsetX(),

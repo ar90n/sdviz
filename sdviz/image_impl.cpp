@@ -15,6 +15,7 @@ namespace
             case ImageImpl::Format::RGB_888:
                 return 3;
             case ImageImpl::Format::UINT_8:
+            case ImageImpl::Format::UINT_16: // fall through
                 return 1;
         }
 
@@ -26,8 +27,10 @@ namespace
         switch( _format )
         {
             case ImageImpl::Format::RGB_888:
-            case ImageImpl::Format::UINT_8:
+            case ImageImpl::Format::UINT_8: // fall through
                 return 1;
+            case ImageImpl::Format::UINT_16:
+                return 2;
         }
 
         throw std::runtime_error( "Invalid image format." );
