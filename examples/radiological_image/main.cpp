@@ -37,14 +37,8 @@ int main(int argc, char const* argv[])
     sdviz::start( config );
 
     sdviz::Image image = loadTestImage();
-    sdviz::Canvas canvas{ image.getWidth(), image.getHeight() };
-    canvas.drawImage( image, std::make_tuple( 0.0, 0.0 ) );
-    auto image_element = sdviz::CanvasElement::create( canvas );
-
-    auto text_element = sdviz::TextElement::create( "This image is from http://barre.nom.fr/medical/samples/" );
-
-    sdviz::eout << image_element << sdviz::endl
-                << text_element << sdviz::endl;
+    sdviz::eout << image << sdviz::endl
+                << "This image is from http://barre.nom.fr/medical/samples/" << sdviz::endl;
     sdviz::wait();
     return 0;
 }

@@ -233,6 +233,20 @@ namespace sdviz
                 return *this;
             }
 
+            Page& operator <<( std::string const& _text )
+            {
+                *this << sdviz::TextElement::create( _text );
+                return *this;
+            }
+
+            Page& operator <<( Image const& _image )
+            {
+                sdviz::Canvas canvas{ _image.getWidth(), _image.getHeight() };
+                canvas.drawImage( _image, std::make_tuple( 0.0, 0.0 ) );
+                *this << sdviz::CanvasElement::create( canvas );
+                return *this;
+            }
+
             Page& operator <<( ContainerElement const& _container )
             {
                 addElement( _container.id );
