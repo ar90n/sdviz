@@ -11,6 +11,8 @@ Image::Format sdviz::convertToImageFormat( ImageImpl::Format const _format )
             return Image::Format::RGB_888;
         case ImageImpl::Format::UINT_8:
             return Image::Format::UINT_8;
+        case ImageImpl::Format::UINT_16:
+            return Image::Format::UINT_16;
     }
 
     throw std::runtime_error( "Invalid image format." );
@@ -23,6 +25,8 @@ ImageImpl::Format sdviz::convertToImageImplFormat( Image::Format const _format )
             return ImageImpl::Format::RGB_888;
         case Image::Format::UINT_8:
             return ImageImpl::Format::UINT_8;
+        case Image::Format::UINT_16:
+            return ImageImpl::Format::UINT_16;
     }
 
     throw std::runtime_error( "Invalid image format." );

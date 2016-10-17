@@ -11,7 +11,8 @@ namespace sdviz
             enum Format
             {
                 RGB_888,
-                UINT_8
+                UINT_8,
+                UINT_16
             };
 
             static int GetChannelsPerPixel( ImageImpl const& _image_impl );

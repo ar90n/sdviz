@@ -26,15 +26,8 @@ std::vector< sdviz::CanvasImpl::CanvasCommandVariant >::const_iterator sdviz::Ca
     return commands.cend();
 }
 
-std::string const sdviz::CanvasImpl::BeginPathPolicy::func_name = "beginPath";
-std::string const sdviz::CanvasImpl::ClosePathPolicy::func_name = "closePath";
-std::string const sdviz::CanvasImpl::StrokePolicy::func_name = "stroke";
-std::string const sdviz::CanvasImpl::FillPolicy::func_name = "fill";
-std::string const sdviz::CanvasImpl::MoveToPolicy::func_name = "moveTo";
-std::string const sdviz::CanvasImpl::LineToPolicy::func_name = "lineTo";
-std::string const sdviz::CanvasImpl::ArcPolicy::func_name = "arc";
-std::string const sdviz::CanvasImpl::PutImageDataPolicy::func_name = "putImageData";
+std::string const sdviz::CanvasImpl::LinePolicy::func_name = "line";
+std::string const sdviz::CanvasImpl::CirclePolicy::func_name = "circle";
+std::string const sdviz::CanvasImpl::ImagePolicy::func_name = "image";
 std::string const sdviz::CanvasImpl::RectPolicy::func_name = "rect";
-std::string const sdviz::CanvasImpl::StrokeTextPolicy::func_name = "strokeText";
-std::string const sdviz::CanvasImpl::FillTextPolicy::func_name = "fillText";
-std::string const sdviz::CanvasImpl::SetPropertyPolicy::func_name = "setProperty";
+std::string const sdviz::CanvasImpl::TextPolicy::func_name = "text";

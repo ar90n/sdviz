@@ -14,49 +14,19 @@ namespace sdviz
     class CanvasImpl final
     {
         public:
-            struct BeginPathPolicy
+            struct LinePolicy
             {
-                using param_type = std::tuple<>;
+                using param_type = std::tuple< std::vector< int >, uint8_t, uint8_t, uint8_t, uint8_t, bool, bool >;
                 static const std::string func_name;
             };
 
-            struct ClosePathPolicy
+            struct CirclePolicy
             {
-                using param_type = std::tuple<>;
+                using param_type = std::tuple< int, int, double, uint8_t, uint8_t, uint8_t, uint8_t, bool, bool >;
                 static const std::string func_name;
             };
 
-            struct StrokePolicy
-            {
-                using param_type = std::tuple<>;
-                static const std::string func_name;
-            };
-
-            struct FillPolicy
-            {
-                using param_type = std::tuple<>;
-                static const std::string func_name;
-            };
-
-            struct MoveToPolicy
-            {
-                using param_type = std::tuple< int, int >;
-                static const std::string func_name;
-            };
-
-            struct LineToPolicy
-            {
-                using param_type = std::tuple< int, int >;
-                static const std::string func_name;
-            };
-
-            struct ArcPolicy
-            {
-                using param_type = std::tuple< int, int, double, double, double, bool >;
-                static const std::string func_name;
-            };
-
-            struct PutImageDataPolicy
+            struct ImagePolicy
             {
                 using param_type = std::tuple< ImageImpl, int, int, double >;
                 static const std::string func_name;
@@ -64,25 +34,13 @@ namespace sdviz
 
             struct RectPolicy
             {
-                using param_type = std::tuple< int, int, int, int >;
+                using param_type = std::tuple< int, int, int, int, uint8_t, uint8_t, uint8_t, uint8_t, bool, bool >;
                 static const std::string func_name;
             };
 
-            struct StrokeTextPolicy
+            struct TextPolicy
             {
-                using param_type = std::tuple< std::string, int, int >;
-                static const std::string func_name;
-            };
-
-            struct FillTextPolicy
-            {
-                using param_type = std::tuple< std::string, int, int >;
-                static const std::string func_name;
-            };
-
-            struct SetPropertyPolicy
-            {
-                using param_type = std::tuple< std::string, std::string >;
+                using param_type = std::tuple< std::string, int, int, uint8_t, uint8_t, uint8_t, uint8_t >;
                 static const std::string func_name;
             };
 
@@ -108,30 +66,16 @@ namespace sdviz
                     param_type param;
             };
 
-            using BeginPathCommand = CanvasCommand< BeginPathPolicy >;
-            using ClosePathCommand = CanvasCommand< ClosePathPolicy >;
-            using StrokeCommand = CanvasCommand< StrokePolicy >;
-            using FillCommand = CanvasCommand< FillPolicy >;
-            using MoveToCommand = CanvasCommand< MoveToPolicy >;
-            using LineToCommand = CanvasCommand< LineToPolicy >;
-            using ArcCommand = CanvasCommand< ArcPolicy >;
-            using PutImageDataCommand = CanvasCommand< PutImageDataPolicy >;
+            using LineCommand = CanvasCommand< LinePolicy >;
+            using CircleCommand = CanvasCommand< CirclePolicy >;
+            using ImageCommand = CanvasCommand< ImagePolicy >;
             using RectCommand = CanvasCommand< RectPolicy >;
-            using StrokeTextCommand = CanvasCommand< StrokeTextPolicy >;
-            using FillTextCommand = CanvasCommand< FillTextPolicy >;
-            using SetPropertyCommand = CanvasCommand< SetPropertyPolicy >;
-            using CanvasCommandVariant = boost::variant< BeginPathCommand,
-                                                         ClosePathCommand,
-                                                         StrokeCommand,
-                                                         FillCommand,
-                                                         MoveToCommand,
-                                                         LineToCommand,
-                                                         ArcCommand,
-                                                         PutImageDataCommand,
+            using TextCommand = CanvasCommand< TextPolicy >;
+            using CanvasCommandVariant = boost::variant< LineCommand,
+                                                         CircleCommand,
+                                                         ImageCommand,
                                                          RectCommand,
-                                                         StrokeTextCommand,
-                                                         FillTextCommand,
-                                                         SetPropertyCommand >;
+                                                         TextCommand >;
 
             template< typename CommandType >
             void addCommand( CommandType const& _command )
