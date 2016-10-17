@@ -25,7 +25,7 @@ Feature
 * Support RGB888 Image.
 * Support two intaractive components ( Button and Slider ).
 
-Future
+Planned feature
 ===============
 * Improve canvas component.
 * Add test cases.
