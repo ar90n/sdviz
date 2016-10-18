@@ -4,7 +4,7 @@
   "description": "sdviz frontend resources.",
   "main": "index.js",
   "scripts": {
-    "build": "webpack && node bundle.js"
+    "build": "webpack --optimize-minimize && node bundle.js"
   },
   "repository": {
     "type": "git",
